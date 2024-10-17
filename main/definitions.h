@@ -1,0 +1,3 @@
+#define ADXL345_SDA 33
+#define ADXL345_SCL 32
+#define ADXL345_INT2 35
