@@ -13,6 +13,7 @@ public:
     void init(std::string token, std::string server);
     bool connect();
     bool sendData(std::string key, float value);
+    bool sendJsonData(std::string json);
     void loop() { tb->loop(); }
 
 private:

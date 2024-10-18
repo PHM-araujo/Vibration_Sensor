@@ -49,3 +49,14 @@ bool MQTT::sendData(std::string key, float value)
     return true;
 }
 
+bool MQTT::sendJsonData(std::string json)
+{
+    bool answ = tb->sendTelemetryJson(json.c_str());
+    if (!answ) {
+        ESP_LOGI("MAIN", "Failed to send data");
+        return false;
+    } 
+    ESP_LOGI("MAIN", "Data sent: %s", json.c_str());
+    return true;
+}
+
