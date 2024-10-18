@@ -10,6 +10,7 @@ set(FILE_ACQUISTION_SRCS
 set(FILE_COMUNICATION_SRCS
     <ComunicationSubsystem/Ethernet/Ethernet.cpp>
     <ComunicationSubsystem/MQTT/MQTT.cpp>
+    <ComunicationSubsystem/ComunicationSubsystem.cpp>
 )
 
 idf_component_register(
@@ -30,6 +31,7 @@ idf_component_register(
 
         "ComunicationSubsystem/MQTT/"
         "ComunicationSubsystem/Ethernet/"
+        "ComunicationSubsystem/"
         
         "BlockingQueue/"
 )
