@@ -2,11 +2,17 @@
 #define BLOCKINGQUEUE_HPP
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
-#include <esp_log.h>
 
 struct AccelerometerData {
-    float velocity_x;
     float acceleration_x;
+    float acceleration_y;
+    float acceleration_z;
+};
+
+struct ProcessedData {  
+    float acceleration_x;
+    float acceleration_y;
+    float acceleration_z;
 };
 
 template <typename T>
@@ -23,10 +29,9 @@ private:
     QueueHandle_t queue_;
 };
 
-// Declaration of the static object
-extern BlockingQueue<AccelerometerData> globalQueue;
+extern BlockingQueue<ProcessedData> sending_queue;
+extern BlockingQueue<AccelerometerData> processing_queue;
 
-// Template function definitions
 template <typename T>
 BlockingQueue<T>::BlockingQueue(size_t max_size) {
     queue_ = xQueueCreate(max_size, sizeof(T));
@@ -39,7 +44,6 @@ BlockingQueue<T>::~BlockingQueue() {
 
 template <typename T>
 void BlockingQueue<T>::push(const T& item) {
-    ESP_LOGI("BlockingQueue", "Pushing item");
     xQueueSend(queue_, &item, portMAX_DELAY);
 }
 

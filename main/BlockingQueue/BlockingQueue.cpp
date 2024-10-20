@@ -1,4 +1,4 @@
 #include "BlockingQueue.hpp"
 
-// Definição do objeto estático
-BlockingQueue<AccelerometerData> globalQueue(30); 
+BlockingQueue<AccelerometerData> processing_queue(30); 
+BlockingQueue<ProcessedData> sending_queue(30); 
