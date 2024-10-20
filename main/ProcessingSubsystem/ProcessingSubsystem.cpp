@@ -1,6 +1,5 @@
 #include "ProcessingSubsystem.hpp"
 #include "BlockingQueue.hpp"
-#include "lowpass_filter.hpp"
 #include <esp_log.h>
 
 ProcessingSubsystem::ProcessingSubsystem(int processing_period)
