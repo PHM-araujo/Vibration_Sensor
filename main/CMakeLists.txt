@@ -7,18 +7,19 @@ set(FILE_ACQUISTION_SRCS
     <AcquisitionSubsystem/AcquisitionSubsystem.cpp>
 )
 
-set(FILE_COMUNICATION_SRCS
-    <ComunicationSubsystem/Ethernet/Ethernet.cpp>
-    <ComunicationSubsystem/MQTT/MQTT.cpp>
-    <ComunicationSubsystem/ComunicationSubsystem.cpp>
+set(FILE_COMMUNICATION_SRCS
+    <CommunicationSubsystem/Ethernet/Ethernet.cpp>
+    <CommunicationSubsystem/MQTT/MQTT.cpp>
+    <CommunicationSubsystem/CommunicationSubsystem.cpp>
 )
 
 idf_component_register(
     SRCS 
         "main.cpp"
         ${FILE_ACQUISTION_SRCS}
-        ${FILE_COMUNICATION_SRCS}
+        ${FILE_COMMUNICATION_SRCS}
         "BlockingQueue/BlockingQueue.cpp"
+        "ProcessingSubsystem/ProcessingSubsystem.cpp"
 
     INCLUDE_DIRS 
         "."
@@ -29,9 +30,11 @@ idf_component_register(
         "AcquisitionSubsystem/ADXL345/"
         "AcquisitionSubsystem/"
 
-        "ComunicationSubsystem/MQTT/"
-        "ComunicationSubsystem/Ethernet/"
-        "ComunicationSubsystem/"
+        "CommunicationSubsystem/MQTT/"
+        "CommunicationSubsystem/Ethernet/"
+        "CommunicationSubsystem/"
+
+        "ProcessingSubsystem/"
         
         "BlockingQueue/"
 )
