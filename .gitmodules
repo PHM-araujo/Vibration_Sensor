@@ -1,3 +1,6 @@
 [submodule "components/components/ThingsBoard"]
 	path = components/components/ThingsBoard
 	url = https://github.com/thingsboard/thingsboard-client-sdk.git
+[submodule "components/espp"]
+	path = components/espp
+	url = https://github.com/esp-cpp/espp

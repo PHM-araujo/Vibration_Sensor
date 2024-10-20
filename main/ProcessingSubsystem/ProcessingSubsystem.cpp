@@ -1,5 +1,6 @@
 #include "ProcessingSubsystem.hpp"
 #include "BlockingQueue.hpp"
+#include "lowpass_filter.hpp"
 #include <esp_log.h>
 
 ProcessingSubsystem::ProcessingSubsystem(int processing_period)
@@ -39,7 +40,9 @@ void ProcessingSubsystem::processingRoutine(void *pvParameters) {
         AccelerometerData data = processing_queue.pop();
         // TODO: Aplicar filtro
         ProcessedData processed_data = {data.acceleration_x, data.acceleration_y, data.acceleration_z};
-        ESP_LOGI("ProcessingSubsystem", "Processing data: %f %f %f", processed_data.acceleration_x, processed_data.acceleration_y, processed_data.acceleration_z);
+        ESP_LOGI("ProcessingSubsystem", "Processing data: %f %f %f", 
+                processed_data.acceleration_x, processed_data.acceleration_y, 
+                processed_data.acceleration_z);
         sending_queue.push(processed_data);
         vTaskDelay(processing_subsystem->processing_period / portTICK_PERIOD_MS);
     }
