@@ -1,10 +1,10 @@
 #include "AcquisitionSubsystem.hpp"
 #include "BlockingQueue.hpp"
 
-AcquisitionSubsystem::AcquisitionSubsystem(int sampling_period, int mean_window_size) 
-    : accelerometer(12345), is_running(false), 
+AcquisitionSubsystem::AcquisitionSubsystem(int sampling_period) 
+    : accelerometer(12345),
     sampling_period(sampling_period),
-    mean_window_size(mean_window_size) {}
+    acquisition_task_handle(nullptr) {}
 
 void AcquisitionSubsystem::init() {
     accelerometer.init();
@@ -13,41 +13,41 @@ void AcquisitionSubsystem::init() {
 }
 
 void AcquisitionSubsystem::startAcquisition() {
-    is_running = true;
-    acquisition_thread = std::thread(&AcquisitionSubsystem::AcquisitionRoutine, this);
+    if (acquisition_task_handle != nullptr) {
+        vTaskDelete(acquisition_task_handle);
+        acquisition_task_handle = nullptr;
+    }
+    xTaskCreate(
+        AcquisitionSubsystem::AcquisitionRoutine, 
+        "AcquisitionRoutine", 
+        4096, 
+        this, 
+        5, 
+        &acquisition_task_handle
+    );
+}
+
+void AcquisitionSubsystem::AcquisitionRoutine(void *pvParameters) {
+    AcquisitionSubsystem *acquisition_subsystem = (AcquisitionSubsystem *)pvParameters;
+    while (true) {
+        float x, y, z;
+        acquisition_subsystem->accelerometer.GetAccelerations(&x, &y, &z);
+        AccelerometerData data = {x, y, z};
+        ESP_LOGI("AcquisitionSubsystem", "Acquiring data: %f %f %f", data.acceleration_x, data.acceleration_y, data.acceleration_z);
+        processing_queue.push(data);
+        vTaskDelay(acquisition_subsystem->sampling_period / portTICK_PERIOD_MS);
+    }
+    vTaskDelete(NULL);
 }
 
 void AcquisitionSubsystem::stopAcquisition() {
-    is_running = false;
-    if (acquisition_thread.joinable()) {
-        acquisition_thread.join();
+    if (acquisition_task_handle != nullptr) {
+        vTaskDelete(acquisition_task_handle);
+        acquisition_task_handle = nullptr;
     }
 }
 
-void AcquisitionSubsystem::AcquisitionRoutine() {
-    float sum_x = 0;
-    int count = 0;
-    float mean_acceleration_x = 0;
-    float x;
-    float velocity_x = 0;
-    float velocity_x_old = 0;
-    while (is_running) {
-        accelerometer.GetAccelerationX(&x);
-        sum_x += x;
-        count++;
-        if (count == mean_window_size) {
-            ESP_LOGI("AcquisitionSubsystem", "Mean acceleration: %F", sum_x / mean_window_size);
-            mean_acceleration_x = sum_x / mean_window_size;
-            count = 0;
-            sum_x = 0;
-            velocity_x = velocity_x_old + (mean_acceleration_x * sampling_period);
-            ESP_LOGI("AcquisitionSubsystem", "Velocity: %f", velocity_x);
-            AccelerometerData data = {velocity_x, mean_acceleration_x};
-            globalQueue.push(data);
-        }
-        vTaskDelay(sampling_period / portTICK_PERIOD_MS);
-    }
-}
+
 
 bool AcquisitionSubsystem::getIsMoving() {
     return accelerometer.getIsActivity();

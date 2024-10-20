@@ -2,25 +2,24 @@
 #define ACQUISITION_SUBSYSTEM_HPP
 
 #include "ADXL345.hpp"
-#include <thread>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 class AcquisitionSubsystem {
 public:
-    AcquisitionSubsystem(int sampling_period = 2, int mean_window_size = 50);
+    AcquisitionSubsystem(int sampling_period = 2);
 
     void init();
     void startAcquisition();
     void stopAcquisition();
-    void AcquisitionRoutine();
+    static void AcquisitionRoutine(void *pvParameters);
 
     bool getIsMoving();
 
 private:
     ADXL345 accelerometer;  // m/s^2
-    std::thread acquisition_thread;
-    std::atomic<bool> is_running;
     int sampling_period; // ms
-    int mean_window_size;   
+    TaskHandle_t acquisition_task_handle;
 };
 
 #endif // ACQUISITION_SUBSYSTEM_HPP
