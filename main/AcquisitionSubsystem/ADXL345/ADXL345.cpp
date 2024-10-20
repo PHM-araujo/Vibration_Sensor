@@ -207,33 +207,11 @@ void ADXL345::disableActivityDetection() {
     }
 }
 
-void ADXL345::calculateVelocity(float deltaTime) {
-    sensors_event_t event;
-    getEvent(&event);
-    // int accelX = static_cast<int>(round(event.acceleration.x));
-    // int accelY = static_cast<int>(round(event.acceleration.y));
-    float accelX = round(event.acceleration.x * 100) / 100.0;
-    float accelY = round(event.acceleration.y * 100) / 100.0;
-    const int threshold = 1;
-    if (abs(accelX) > threshold) {
-        velocityX += accelX * deltaTime;
-    } else {
-        velocityX = 0;
-    }
-    if (abs(accelY) > threshold) {
-        velocityY += accelY * deltaTime;
-    } else {
-        velocityY = 0;
-    }
-
-    printf("%.2f %.2f\n", velocityX, accelX);
-
-    vTaskDelay(deltaTime / portTICK_PERIOD_MS);
-}
-
-void ADXL345::GetAccelerationX(float* x)
+void ADXL345::GetAccelerations(float* x, float* y, float* z)
 {
     sensors_event_t event;
     getEvent(&event);
     *x = event.acceleration.x;
+    *y = event.acceleration.y;
+    *z = event.acceleration.z;
 }

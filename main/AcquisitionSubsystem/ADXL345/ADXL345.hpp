@@ -30,8 +30,7 @@ public:
     void disableActivityDetection();
     void displayAccelerationUnscaled(int period);
     void setActiveThreshold(float threshold);
-    void calculateVelocity(float deltaTime);
-    void GetAccelerationX(float* x);
+    void GetAccelerations(float* x, float* y, float* z);
 private:
     void startPollingTimer(int period, TimerHandle_t* xTimer, 
                             TimerCallbackFunction_t timer_callback);
@@ -40,8 +39,6 @@ private:
     static TimerHandle_t xTimerActive;
     static bool is_active;
     float thresholdActive;
-    float velocityX = 0;  
-    float velocityY = 0; 
 };
 
 #endif // ADXL345_HPP
