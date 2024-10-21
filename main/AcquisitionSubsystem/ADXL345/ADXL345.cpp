@@ -3,15 +3,7 @@
 #include <iostream>
 #include <iomanip>
 
-bool ADXL345::is_active = false;
-TimerHandle_t ADXL345::xTimerActive = nullptr;
-
 ADXL345::ADXL345(int32_t sensorID): Adafruit_ADXL345_Unified(sensorID){}
-
-ADXL345::~ADXL345()
-{
-    disableActivityDetection();
-}
 
 void ADXL345::init()
 {
@@ -160,52 +152,6 @@ void ADXL345::setOffset(int16_t offset, Axis axis)
     writeRegister(reg, offset);
 }
 
-void ADXL345::setActiveThreshold(float threshold) {
-    thresholdActive = threshold;
-}
-
-void ADXL345::enableActivityDetection(float threshold, int period) {
-    setActiveThreshold(threshold);
-    startPollingTimer(period, &xTimerActive, timerCallbackActive);
-}
-
-void ADXL345::startPollingTimer(int period, TimerHandle_t* xTimer, TimerCallbackFunction_t timer_callback) {
-    if (*xTimer == nullptr) {
-        *xTimer = xTimerCreate("ActivePollingTimer", pdMS_TO_TICKS(period), pdTRUE, (void*)this, timer_callback);
-    } else {
-        xTimerChangePeriod(*xTimer, pdMS_TO_TICKS(period), 0);
-    }
-    if (xTimer != nullptr) {
-        xTimerStart(*xTimer, 0);
-    } else {
-        ESP_LOGI("ADXL345", "Failed to create timer");
-    }
-}
-
-void ADXL345::timerCallbackActive(TimerHandle_t xTimer) {
-    ADXL345* sensor = static_cast<ADXL345*>(pvTimerGetTimerID(xTimer));
-    sensors_event_t event;
-    sensor->getEvent(&event);
-    if (abs(event.acceleration.x) > sensor->thresholdActive || abs(event.acceleration.y) > sensor->thresholdActive) {
-        is_active = true;
-    } else {
-        is_active = false;
-    }
-}
-
-bool ADXL345::getIsActivity() {
-    return is_active;
-}
-
-void ADXL345::disableActivityDetection() {
-    if (xTimerActive != nullptr) {
-        xTimerStop(xTimerActive, 0);
-        xTimerDelete(xTimerActive, 0);
-        xTimerActive = nullptr;
-        is_active = false;
-        ESP_LOGI("ADXL345", "Activity detection disabled");
-    }
-}
 
 void ADXL345::GetAccelerations(float* x, float* y, float* z)
 {

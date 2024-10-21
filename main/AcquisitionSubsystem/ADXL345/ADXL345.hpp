@@ -18,27 +18,14 @@ public:
     enum Axis {X, Y, Z};
 
     ADXL345(int32_t sensorID = 12345);
-    ~ADXL345();
     void displayRange();
     void displayDataRate();
     void displayAccelerations(int period);
     void calibrateAxis(int16_t num_readings = 500);
     void setOffset(int16_t offset, Axis eixo);
     void init();
-    bool getIsActivity();
-    void enableActivityDetection(float threshold = 2, int period = 500);
-    void disableActivityDetection();
     void displayAccelerationUnscaled(int period);
-    void setActiveThreshold(float threshold);
     void GetAccelerations(float* x, float* y, float* z);
-private:
-    void startPollingTimer(int period, TimerHandle_t* xTimer, 
-                            TimerCallbackFunction_t timer_callback);
-    static void timerCallbackActive(TimerHandle_t xTimer);
-    
-    static TimerHandle_t xTimerActive;
-    static bool is_active;
-    float thresholdActive;
 };
 
 #endif // ADXL345_HPP
