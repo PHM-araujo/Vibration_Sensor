@@ -6,15 +6,16 @@
 
 class ProcessingSubsystem {
 public:
-    ProcessingSubsystem(int processing_period = 2);
+    ProcessingSubsystem();
     ~ProcessingSubsystem();
 
+    void init(int processing_period);
     void startProcessing();
     void stopProcessing();
     static void processingRoutine(void *pvParameters);
 
 private:
-    int processing_period; // ms
+    int _processing_period; // ms
     TaskHandle_t processing_thread_handle;
 };
 
