@@ -13,6 +13,11 @@ set(FILE_COMMUNICATION_SRCS
     <CommunicationSubsystem/CommunicationSubsystem.cpp>
 )
 
+set(FILE_PROCESSING_SRCS
+    <ProcessingSubsystem/ProcessingSubsystem.cpp>
+    <ProcessingSubsystem/LowPassFilter/LowPassFilter.cpp>
+)
+
 set(FILE_FSM_SRCS
     <FSM/AwaitingMonitoring/AwaitingMonitoring.cpp>
     <FSM/Monitoring/Monitoring.cpp>
@@ -24,10 +29,10 @@ idf_component_register(
     SRCS 
         "main.cpp"
         ${FILE_ACQUISTION_SRCS}
+        ${FILE_PROCESSING_SRCS}
         ${FILE_COMMUNICATION_SRCS}
         ${FILE_FSM_SRCS}
         "BlockingQueue/BlockingQueue.cpp"
-        "ProcessingSubsystem/ProcessingSubsystem.cpp"
         "VibrationSystem/VibrationSystem.cpp"
 
     INCLUDE_DIRS 
@@ -39,6 +44,9 @@ idf_component_register(
         "AcquisitionSubsystem/ADXL345/"
         "AcquisitionSubsystem/"
 
+        "ProcessingSubsystem/"
+        "ProcessingSubsystem/LowPassFilter/"
+
         "CommunicationSubsystem/MQTT/"
         "CommunicationSubsystem/Ethernet/"
         "CommunicationSubsystem/"
@@ -48,7 +56,6 @@ idf_component_register(
         "FSM/Monitoring/"
         "FSM/StartingDevice/"
         
-        "ProcessingSubsystem/"
         
         "BlockingQueue/"
 
