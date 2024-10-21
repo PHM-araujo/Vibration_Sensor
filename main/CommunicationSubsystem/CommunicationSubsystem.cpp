@@ -6,8 +6,8 @@
 #include <sstream>
 #include <iomanip>
 
-CommunicationSubsystem::CommunicationSubsystem(int sending_period)
-    : sending_period(sending_period),
+CommunicationSubsystem::CommunicationSubsystem()
+    : _sending_period(20),
     communication_thread_handle(nullptr) {}
 
 CommunicationSubsystem::~CommunicationSubsystem()
@@ -15,8 +15,9 @@ CommunicationSubsystem::~CommunicationSubsystem()
     stopCommunication();
 }
 
-void CommunicationSubsystem::init()
+void CommunicationSubsystem::init(int sending_period)
 {
+    _sending_period = sending_period;
     Ethernet *eth = Ethernet::getInstance();
     eth->init();
     mqtt.init(TOKEN, THINGSBOARD_SERVER);
@@ -95,6 +96,6 @@ void CommunicationSubsystem::communicationRoutine(void *pvParameters)
             communication_subsystem->mqtt.loop();
         }
         communication_subsystem->mqtt.connect();
-        vTaskDelay(communication_subsystem->sending_period / portTICK_PERIOD_MS);
+        vTaskDelay(communication_subsystem->_sending_period / portTICK_PERIOD_MS);
     }
 }

@@ -8,16 +8,16 @@
 
 class CommunicationSubsystem {
 public:
-    CommunicationSubsystem(int sending_period = 20);
+    CommunicationSubsystem();
     ~CommunicationSubsystem();
 
-    void init();
+    void init(int sending_period);
     void startCommunication();
     void stopCommunication();
     static void communicationRoutine(void *pvParameters);
 
 private:
-    int sending_period; // ms
+    int _sending_period; // ms
     TaskHandle_t communication_thread_handle;
     MQTT mqtt = MQTT(10, 900);
 };
