@@ -17,6 +17,12 @@ Ethernet* Ethernet::getInstance() {
 
 void Ethernet::eth_event_handler(void *arg, esp_event_base_t event_base,
                                   int32_t event_id, void *event_data) {
+
+    if (event_data == nullptr) {
+        ESP_LOGE(TAG, "event_data is null");
+        return;
+    }
+    
     uint8_t mac_addr[6] = {0};
     esp_eth_handle_t eth_handle = *(esp_eth_handle_t *)event_data;
 
@@ -45,6 +51,11 @@ void Ethernet::got_ip_event_handler(void *arg, esp_event_base_t event_base,
                                      int32_t event_id, void *event_data) {
     ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
     const esp_netif_ip_info_t *ip_info = &event->ip_info;
+
+    if (event_data == nullptr) {
+        ESP_LOGE(TAG, "event_data is null");
+        return;
+    }
 
     ESP_LOGI(TAG, "Ethernet Got IP Address");
     ESP_LOGI(TAG, "~~~~~~~~~~~");
@@ -79,8 +90,11 @@ void Ethernet::init() {
 
     esp_eth_config_t config = ETH_DEFAULT_CONFIG(mac, phy); // apply default driver configuration
     esp_eth_handle_t eth_handle = NULL;                     // after the driver is installed, we will get the handle of the driver
-    esp_eth_driver_install(&config, &eth_handle);           // install driver
-
+    esp_err_t ret = esp_eth_driver_install(&config, &eth_handle);           // install driver
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to install Ethernet driver: %s", esp_err_to_name(ret));
+        return;
+    }
     esp_netif_attach(eth_netif, esp_eth_new_netif_glue(eth_handle));
     esp_eth_start(eth_handle);
 }
