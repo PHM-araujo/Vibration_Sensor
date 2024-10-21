@@ -3,6 +3,7 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "LowPassFilter.hpp"
 
 class ProcessingSubsystem {
 public:
@@ -16,6 +17,9 @@ public:
 
 private:
     int _processing_period; // ms
+    LowPassFilter _low_pass_filter_x;
+    LowPassFilter _low_pass_filter_y;
+    LowPassFilter _low_pass_filter_z;
     TaskHandle_t processing_thread_handle;
 };
 
