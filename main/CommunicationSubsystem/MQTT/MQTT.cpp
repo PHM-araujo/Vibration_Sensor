@@ -30,10 +30,8 @@ bool MQTT::connect()
     }
 
     if (count == this->reconnect_count) {
-        ESP_LOGI("MAIN", "Failed to connect to the server!");
         return false;
     } else {
-        ESP_LOGI("MAIN", "Connected to the server!");
         return true;
     }
 }
