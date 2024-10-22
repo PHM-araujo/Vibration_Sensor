@@ -5,6 +5,7 @@ bool AcquisitionSubsystem::is_active = false;
 TimerHandle_t AcquisitionSubsystem::xTimerActive = nullptr;
 TimerHandle_t AcquisitionSubsystem::xTimerInactive = nullptr;
 uint8_t AcquisitionSubsystem::count_inactive = 0;
+bool AcquisitionSubsystem::is_timer_alive = false;
 
 AcquisitionSubsystem::AcquisitionSubsystem() 
     : accelerometer(12345),
@@ -73,6 +74,7 @@ void AcquisitionSubsystem::setInactiveThreshold(float threshold) {
 
 void AcquisitionSubsystem::enableActivityDetection(float threshold, int period) {
     is_active = false;
+    is_timer_alive = false;
     setActiveThreshold(threshold);
     startPollingTimer(period, &xTimerActive, timerCallbackActive);
 }
@@ -106,6 +108,7 @@ void AcquisitionSubsystem::timerCallbackActive(TimerHandle_t xTimer) {
     } else {
         is_active = false;
     }
+    is_timer_alive = true;
 }
 
 void AcquisitionSubsystem::timerCallbackInactive(TimerHandle_t xTimer) {
@@ -143,4 +146,8 @@ void AcquisitionSubsystem::disableInactivityDetection() {
         count_inactive = 0;
         ESP_LOGI("ADXL345", "Inactivity detection disabled");
     }
+}
+
+bool AcquisitionSubsystem::getTimerIsAlive() {
+    return is_timer_alive;
 }

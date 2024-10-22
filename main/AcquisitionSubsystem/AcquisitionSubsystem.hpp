@@ -20,6 +20,7 @@ public:
     bool getIsMoving();
     void disableActivityDetection();
     void disableInactivityDetection();
+    bool getTimerIsAlive();
 private:
     void setActiveThreshold(float threshold);
     void setInactiveThreshold(float threshold);
@@ -37,6 +38,7 @@ private:
     static uint8_t count_inactive;
     float thresholdActive;
     float thresholdInactive;
+    static bool is_timer_alive;
 };
 
 #endif // ACQUISITION_SUBSYSTEM_HPP

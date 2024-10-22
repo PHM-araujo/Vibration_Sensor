@@ -86,3 +86,7 @@ void VibrationSystem::stopInactiveDetection() {
   acquisition_subsystem.disableInactivityDetection();
 }
 
+bool VibrationSystem::checkActiveDetectionTimer() {
+  return acquisition_subsystem.getTimerIsAlive();
+}
+

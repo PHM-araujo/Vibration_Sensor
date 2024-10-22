@@ -22,6 +22,7 @@ public:
     void stopInactiveDetection();
     void startMonitoringRoutines();
     void stopMonitoringRoutines();
+    bool checkActiveDetectionTimer();
 
 private:
     static void updateRoutine(void *pvParameters);
