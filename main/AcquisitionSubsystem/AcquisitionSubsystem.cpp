@@ -51,6 +51,10 @@ void AcquisitionSubsystem::AcquisitionRoutine(void *pvParameters) {
         float x, y, z;
         acquisition_subsystem->accelerometer.GetAccelerations(&x, &y, &z);
         AccelerometerData data = {x, y, z};
+        if (isnan(x) || isnan(y) || isnan(z)) {
+            ESP_LOGE("AcquisitionSubsystem", "Invalid acceleration values");
+            continue;
+        }
         processing_queue.push(data);
         vTaskDelay(acquisition_subsystem->_sampling_period / portTICK_PERIOD_MS);
     }
@@ -62,6 +66,7 @@ void AcquisitionSubsystem::stopAcquisition() {
         vTaskDelete(acquisition_task_handle);
         acquisition_task_handle = nullptr;
     }
+    processing_queue.clear();
 }
 
 void AcquisitionSubsystem::setActiveThreshold(float threshold) {
@@ -76,6 +81,7 @@ void AcquisitionSubsystem::enableActivityDetection(float threshold, int period) 
     is_active = false;
     is_timer_alive = false;
     setActiveThreshold(threshold);
+    ESP_LOGI("ADXL345", "Activity detection enabled");
     startPollingTimer(period, &xTimerActive, timerCallbackActive);
 }
 
@@ -100,9 +106,16 @@ void AcquisitionSubsystem::startPollingTimer(int period, TimerHandle_t* xTimer, 
 
 void AcquisitionSubsystem::timerCallbackActive(TimerHandle_t xTimer) {
     AcquisitionSubsystem *acquisition_subsystem = (AcquisitionSubsystem *)pvTimerGetTimerID(xTimer);
+    if (acquisition_subsystem == nullptr) {
+        ESP_LOGE("AcquisitionSubsystem", "Invalid acquisition_subsystem pointer");
+        return;
+    }
     float accel_x, accel_y, accel_z;
     acquisition_subsystem->accelerometer.GetAccelerations(&accel_x, &accel_y, &accel_z);
-    ESP_LOGI("ADXL345", "Active");
+    if (isnan(accel_x) || isnan(accel_y) || isnan(accel_z)) {
+        ESP_LOGE("AcquisitionSubsystem", "Invalid acceleration values");
+        return;
+    }
     if (abs(accel_x) > acquisition_subsystem->thresholdActive || abs(accel_y) > acquisition_subsystem->thresholdActive) {
         is_active = true;
     } else {

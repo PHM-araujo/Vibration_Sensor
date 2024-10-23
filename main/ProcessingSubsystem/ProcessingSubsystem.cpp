@@ -1,6 +1,7 @@
 #include "ProcessingSubsystem.hpp"
 #include "BlockingQueue.hpp"
 #include <esp_log.h>
+#include <cmath>
 
 ProcessingSubsystem::ProcessingSubsystem()
     : _processing_period(2),
@@ -37,6 +38,7 @@ void ProcessingSubsystem::stopProcessing() {
     _low_pass_filter_x.reset();
     _low_pass_filter_y.reset();
     _low_pass_filter_z.reset();
+    sending_queue.clear();
 }
 
 void ProcessingSubsystem::processingRoutine(void *pvParameters) {
@@ -46,6 +48,10 @@ void ProcessingSubsystem::processingRoutine(void *pvParameters) {
         data.acceleration_x = processing_subsystem->_low_pass_filter_x.filt(data.acceleration_x);
         data.acceleration_y = processing_subsystem->_low_pass_filter_y.filt(data.acceleration_y);
         data.acceleration_z = processing_subsystem->_low_pass_filter_z.filt(data.acceleration_z);
+        if (std::isnan(data.acceleration_x) || std::isnan(data.acceleration_y) || std::isnan(data.acceleration_z)) {
+            ESP_LOGE("ProcessingSubsystem", "Invalid acceleration values");
+            continue;
+        }
         ProcessedData processed_data = {data.acceleration_x, data.acceleration_y, data.acceleration_z};
         sending_queue.push(processed_data);
         vTaskDelay(processing_subsystem->_processing_period / portTICK_PERIOD_MS);

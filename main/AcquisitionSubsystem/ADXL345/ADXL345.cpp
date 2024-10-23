@@ -124,7 +124,7 @@ void ADXL345::calibrateAxis(int16_t num_readings)
         sum_y += getY();
         sum_x += getX();
 
-        vTaskDelay(10 / portTICK_PERIOD_MS);
+        vTaskDelay(3 / portTICK_PERIOD_MS);
     }
     int16_t offset = (256 - (sum_z / num_readings)) / 4;
     setOffset(offset, Z);
@@ -157,6 +157,14 @@ void ADXL345::GetAccelerations(float* x, float* y, float* z)
 {
     sensors_event_t event;
     getEvent(&event);
+    if (isnan(event.acceleration.x) || isnan(event.acceleration.y) || isnan(event.acceleration.z))
+    {
+        ESP_LOGE("ADXL345", "Invalid acceleration values");
+        *x = NAN;
+        *y = NAN;
+        *z = NAN;
+        return;
+    }
     *x = event.acceleration.x;
     *y = event.acceleration.y;
     *z = event.acceleration.z;

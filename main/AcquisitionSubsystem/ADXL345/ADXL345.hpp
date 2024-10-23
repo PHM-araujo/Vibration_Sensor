@@ -21,7 +21,7 @@ public:
     void displayRange();
     void displayDataRate();
     void displayAccelerations(int period);
-    void calibrateAxis(int16_t num_readings = 500);
+    void calibrateAxis(int16_t num_readings = 250);
     void setOffset(int16_t offset, Axis eixo);
     void init();
     void displayAccelerationUnscaled(int period);
