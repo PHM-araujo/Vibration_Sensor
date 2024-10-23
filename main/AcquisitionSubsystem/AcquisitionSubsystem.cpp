@@ -27,7 +27,7 @@ AcquisitionSubsystem::~AcquisitionSubsystem() {
 void AcquisitionSubsystem::init(int sampling_period) {
     accelerometer.init();
     _sampling_period = sampling_period;
-    accelerometer.calibrateAxis();
+    //accelerometer.calibrateAxis();
 }
 
 void AcquisitionSubsystem::startAcquisition() {
