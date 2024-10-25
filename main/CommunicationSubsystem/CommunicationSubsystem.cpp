@@ -62,6 +62,7 @@ void CommunicationSubsystem::communicationRoutine(void *pvParameters)
     values.reserve(10);
     while (true)
     {   
+        communication_subsystem->mqtt.connect();
         ProcessedData data = sending_queue.pop();
         values.push_back(data);
         if (values.size() == 10) {
@@ -95,7 +96,6 @@ void CommunicationSubsystem::communicationRoutine(void *pvParameters)
             communication_subsystem->mqtt.sendJsonData(payload); 
             communication_subsystem->mqtt.loop();
         }
-        communication_subsystem->mqtt.connect();
         vTaskDelay(communication_subsystem->_sending_period / portTICK_PERIOD_MS);
     }
 }
