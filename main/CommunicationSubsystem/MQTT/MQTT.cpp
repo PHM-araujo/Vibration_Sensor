@@ -26,7 +26,7 @@ bool MQTT::connect()
         tb->connect(this->thingsboard_server.c_str(), this->token.c_str());
         ESP_LOGI("MAIN", "Trying to connect to the server...");
         count++;
-        vTaskDelay(500 / portTICK_PERIOD_MS);
+        vTaskDelay(5000 / portTICK_PERIOD_MS);
     }
 
     if (count == this->reconnect_count) {
