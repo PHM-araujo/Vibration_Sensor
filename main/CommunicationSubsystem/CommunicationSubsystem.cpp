@@ -60,6 +60,7 @@ void CommunicationSubsystem::communicationRoutine(void *pvParameters)
     CommunicationSubsystem *communication_subsystem = (CommunicationSubsystem *)pvParameters;
     std::vector<ProcessedData> values;
     values.reserve(10);
+    communication_subsystem->mqtt.connect();
     while (true)
     {   
         communication_subsystem->mqtt.connect();
