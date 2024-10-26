@@ -44,7 +44,7 @@ void VibrationSystem::updateRoutine(void *pvParameters) {
 
 void VibrationSystem::init(State *initial_state) {
   trasitionTo(initial_state);
-  xTaskCreate(&updateRoutine, "updateRoutine", 2048, this, 5, NULL);
+  xTaskCreate(&updateRoutine, "updateRoutine", 4096, this, 5, NULL);
 }
 
 void VibrationSystem::initSubsystems() {
