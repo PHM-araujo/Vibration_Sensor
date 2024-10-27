@@ -1,0 +1,40 @@
+@startuml Diagrama de estados
+[*] --> initDevice
+
+state "Iniciando Dispositivo" as initDevice {
+    initDevice: entry / Inicializa componentes
+}
+initDevice -down-> aguardadoColeta: Sistema inicializado com sucesso
+initDevice -> erroHandling: Erro ao inicializar o dispositivo
+note left of initDevice
+    O respectivo diagrama de atividades 
+    especifica a inicialização 
+    dos componentes
+end note
+
+state "Aguardando Coleta" as aguardadoColeta {
+    aguardadoColeta: do / Aguarda comando para iniciar coleta
+}
+aguardadoColeta -> coletandoDados: Comando para iniciar coleta recebido
+
+state "Coletando dados" as coletandoDados {
+    coletandoDados: entry / Cria as threads de coleta
+    coletandoDados: do / Coleta os dados
+    coletandoDados: exit / Finaliza as threads de coleta
+}
+coletandoDados -down-> aguardadoColeta: Coleta finalizada
+coletandoDados -down-> erroHandling: Erro ao coletar dados
+note left of coletandoDados
+    As threads de coleta são
+    específicadas no respectivo
+    diagrama de sequência
+end note
+
+state "Lidando com erros" as erroHandling {
+    erroHandling: do / Trata os erros
+    erroHandling: exit/ Envia um alerta para o servidor com o motivo do erro
+}
+erroHandling --> aguardadoColeta: Erro tratado
+erroHandling -right-> [*]: Erro não tratado
+
+@enduml

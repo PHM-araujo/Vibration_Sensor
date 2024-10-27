@@ -1,0 +1,111 @@
+@startuml Class diagram
+' Classe de Middleware que gerencia o sistema
+class VibrationSystem {
+    +initSystem() : void
+    +transitionTo (*new_state : State) void
+    - state : State
+    -quee_processing_acquisition : Blockingqueue
+    -quee_processing_comunication : Blockingqueue
+    -acquisition_subsystem : AcquisitionSubsystem
+    -processing_subsystem : ProcessingSubsystem
+    -comunication_subsystem : ComunicationSubsystem
+}
+
+' Classes de sensores
+class MPU6050 implements Sensor  {
+    +readData() : float
+}
+
+class ADXL345 implements Sensor {
+    +readData() : float
+}
+
+interface Sensor {
+    +readData() : float
+}
+
+' Classe de Fila Bloqueante
+class Blockingqueue {
+    +enqueue(dado : float) : void
+    +dequeue() : float
+}
+' Threads do Sistema
+class AcquisitionSubsystem { 
+    -sensors : Sensor[2]
+    +run() : void
+    +initAcquisition() : bool
+}
+class ProcessingSubsystem {
+    +run() : void
+}
+class ComunicationSubsystem {
+    -comunicacao : IComunication
+    +run() : void
+    +initComunication(): bool
+}
+
+AcquisitionSubsystem --> Blockingqueue : "enqueue()"
+AcquisitionSubsystem --> Sensor: readData()
+
+ProcessingSubsystem --> Blockingqueue : "dequeue()"
+ProcessingSubsystem --> Blockingqueue : "enqueue()"
+
+ComunicationSubsystem --> Blockingqueue : "dequeue()"
+ComunicationSubsystem -->   IComunication: sendData()
+
+' Comunicação Ethernet e MQTT
+interface IComunication {
+    +sendData(dado : float) : void
+}
+class MQTTClient implements IComunication {
+    +sendData(dado : float) : void
+    +publish(mensagem : String) : void
+}
+class EthernetController {
+    +conect() : void
+    +enviar(dados : DadosVibracao) : void
+}
+
+MQTTClient --> EthernetController : "enviar()"
+
+' Middleware gerencia todas as threads e filas
+VibrationSystem -left-> AcquisitionSubsystem : Executa
+VibrationSystem --> ProcessingSubsystem : Executa
+VibrationSystem -right-> ComunicationSubsystem : Executa
+VibrationSystem --> Blockingqueue : gerencia
+VibrationSystem -up-> State : possui
+
+' Maquina de estados 
+abstract class State {
+    #vibration_system : VibrationSystem
+    +enter() : void
+    +update() : void
+    +exit() : void
+}
+class IniciandoDispositivo extends State {
+    +enter() : void
+    +update() : void
+    +exit() : void
+}
+class AguardandoColeta extends State {
+    +enter() : void
+    +update() : void
+    +exit() : void
+}
+class Coletandodados extends State {
+    +enter() : void
+    +update() : void
+    +exit() : void
+}
+class LidandoComErros extends State {
+    +enter() : void
+    +update() : void
+    +exit() : void
+}
+
+' Notas
+note left of EthernetController
+    Singleton implementation
+end note
+
+@enduml

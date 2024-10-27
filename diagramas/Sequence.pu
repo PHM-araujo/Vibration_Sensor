@@ -1,0 +1,38 @@
+@startuml Diagrama de sequência
+actor Usuário
+participant Sensor
+
+Usuário -> DataAcquisition: Iniciar aquisição de dados
+activate DataAcquisition
+note right: Executa a cada 4ms
+
+par
+loop cada 4ms
+    DataAcquisition -> Sensor: Solicitar dados
+    Sensor --> DataAcquisition: Retorna dados adquiridos
+    DataAcquisition -> BlockingQueue1: Coloca dados na fila 1
+end
+deactivate DataAcquisition
+
+    loop cada 200ms
+        DataProcessing -> BlockingQueue1: Retirar dados da fila 1
+        activate DataProcessing
+        BlockingQueue1 --> DataProcessing: Dados adquiridos
+        note right: Executa a cada 200ms
+        DataProcessing -> DataProcessing: Processa dados
+        DataProcessing -> BlockingQueue2: Coloca dados processados na fila 2
+        deactivate DataProcessing
+    end
+
+    loop cada 500ms
+        DataSending -> BlockingQueue2: Retirar dados da fila 2
+        activate DataSending
+        BlockingQueue2 --> DataSending: Dados processados
+        note right: Executa a cada 500ms
+        DataSending -> DataSending: Envia dados para o destino
+        deactivate DataSending
+    end
+end
+
+Usuário <- DataAcquisition: Aquisição completasz
+@enduml
