@@ -10,7 +10,9 @@ bool AcquisitionSubsystem::is_timer_alive = false;
 AcquisitionSubsystem::AcquisitionSubsystem() 
     : accelerometer(12345),
     _sampling_period(2),
-    acquisition_task_handle(nullptr) {}
+    acquisition_task_handle(nullptr), 
+    thresholdActive(1),
+    thresholdInactive(1) {}
 
 AcquisitionSubsystem::~AcquisitionSubsystem() {
     if (acquisition_task_handle != nullptr) {
@@ -112,10 +114,6 @@ void AcquisitionSubsystem::timerCallbackActive(TimerHandle_t xTimer) {
     }
     float accel_x, accel_y, accel_z;
     acquisition_subsystem->accelerometer.GetAccelerations(&accel_x, &accel_y, &accel_z);
-    if (isnan(accel_x) || isnan(accel_y) || isnan(accel_z)) {
-        ESP_LOGE("AcquisitionSubsystem", "Invalid acceleration values");
-        return;
-    }
     if (abs(accel_x) > acquisition_subsystem->thresholdActive || abs(accel_y) > acquisition_subsystem->thresholdActive) {
         is_active = true;
     } else {
@@ -145,8 +143,6 @@ bool AcquisitionSubsystem::getIsMoving() {
 void AcquisitionSubsystem::disableActivityDetection() {
     if (xTimerActive != nullptr) {
         xTimerStop(xTimerActive, 0);
-        xTimerDelete(xTimerActive, 0);
-        xTimerActive = nullptr;
         ESP_LOGI("ADXL345", "Activity detection disabled");
     }
 }
@@ -154,8 +150,6 @@ void AcquisitionSubsystem::disableActivityDetection() {
 void AcquisitionSubsystem::disableInactivityDetection() {
     if (xTimerInactive != nullptr) {
         xTimerStop(xTimerInactive, 0);
-        xTimerDelete(xTimerInactive, 0);
-        xTimerInactive = nullptr;
         count_inactive = 0;
         ESP_LOGI("ADXL345", "Inactivity detection disabled");
     }
