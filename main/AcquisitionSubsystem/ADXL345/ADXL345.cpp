@@ -155,17 +155,7 @@ void ADXL345::setOffset(int16_t offset, Axis axis)
 
 void ADXL345::GetAccelerations(float* x, float* y, float* z)
 {
-    sensors_event_t event;
-    getEvent(&event);
-    if (isnan(event.acceleration.x) || isnan(event.acceleration.y) || isnan(event.acceleration.z))
-    {
-        ESP_LOGE("ADXL345", "Invalid acceleration values");
-        *x = NAN;
-        *y = NAN;
-        *z = NAN;
-        return;
-    }
-    *x = event.acceleration.x;
-    *y = event.acceleration.y;
-    *z = event.acceleration.z;
+    *x = getX() * ADXL345_MG2G_MULTIPLIER * SENSORS_GRAVITY_STANDARD;
+    *y = getY() * ADXL345_MG2G_MULTIPLIER * SENSORS_GRAVITY_STANDARD;
+    *z = getZ() * ADXL345_MG2G_MULTIPLIER * SENSORS_GRAVITY_STANDARD;
 }
