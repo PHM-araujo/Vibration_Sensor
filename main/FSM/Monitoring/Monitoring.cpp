@@ -13,6 +13,7 @@ void Monitoring::Enter() {
 void Monitoring::Update() {
   if (!_vibration_system->getIsActive()) {
     _vibration_system->trasitionTo(new AwaitingMonitoring());
+    return;
   }
 }
 
