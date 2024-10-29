@@ -1,38 +1,38 @@
 @startuml Diagrama de sequência
-actor Usuário
-participant Sensor
+actor Vibration_System
+participant accelerometer
 
-Usuário -> DataAcquisition: Iniciar aquisição de dados
-activate DataAcquisition
-note right: Executa a cada 4ms
-
+Vibration_System -> acquisition_subsystem: Iniciar aquisição de dados
+Vibration_System -> processing_subsystem: Iniciar o processamento de dados
+Vibration_System -> communication_subsystem: Iniciar o envio de dados
+activate acquisition_subsystem
 par
-loop cada 4ms
-    DataAcquisition -> Sensor: Solicitar dados
-    Sensor --> DataAcquisition: Retorna dados adquiridos
-    DataAcquisition -> BlockingQueue1: Coloca dados na fila 1
+loop cada 2ms
+    acquisition_subsystem -> accelerometer: Solicitar dados
+    activate accelerometer
+    accelerometer --> acquisition_subsystem: Retorna dados adquiridos
+    deactivate accelerometer    
+    acquisition_subsystem -> processing_queue: Coloca dados na fila de processamento
 end
-deactivate DataAcquisition
-
-    loop cada 200ms
-        DataProcessing -> BlockingQueue1: Retirar dados da fila 1
-        activate DataProcessing
-        BlockingQueue1 --> DataProcessing: Dados adquiridos
-        note right: Executa a cada 200ms
-        DataProcessing -> DataProcessing: Processa dados
-        DataProcessing -> BlockingQueue2: Coloca dados processados na fila 2
-        deactivate DataProcessing
+deactivate acquisition_subsystem
+    loop cada 2ms
+        processing_subsystem -> processing_queue: Retirar dados de processamento
+        activate processing_subsystem
+        processing_queue --> processing_subsystem: Dados adquiridos
+        processing_subsystem -> processing_subsystem: Processa dados
+        processing_subsystem -> sending_queue: Coloca dados processados na fila de envio
+        deactivate processing_subsystem
     end
 
-    loop cada 500ms
-        DataSending -> BlockingQueue2: Retirar dados da fila 2
-        activate DataSending
-        BlockingQueue2 --> DataSending: Dados processados
-        note right: Executa a cada 500ms
-        DataSending -> DataSending: Envia dados para o destino
-        deactivate DataSending
+    loop cada 10ms
+        communication_subsystem -> sending_queue: Retirar dados da fila de envio
+        activate communication_subsystem
+        sending_queue --> communication_subsystem: Dados processados
+        communication_subsystem -> mqtt: Envia dados para o servidor
+        activate mqtt
+        mqtt --> communication_subsystem: Confirmação de envio
+        deactivate mqtt
+        deactivate communication_subsystem
     end
 end
-
-Usuário <- DataAcquisition: Aquisição completasz
 @enduml

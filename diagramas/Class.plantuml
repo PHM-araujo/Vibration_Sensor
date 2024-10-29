@@ -1,79 +1,154 @@
-@startuml Class diagram
-' Classe de Middleware que gerencia o sistema
+@startuml
 class VibrationSystem {
-    +initSystem() : void
-    +transitionTo (*new_state : State) void
-    - state : State
-    -quee_processing_acquisition : Blockingqueue
-    -quee_processing_comunication : Blockingqueue
+    +VibrationSystem()
+    +~VibrationSystem()
+    +trasitionTo(new_state : State) : void
+    +init(initial_state : State) : void
+    +initSubsystems() : void
+    +getIsActive() : bool
+    +startActiveDetection() : void
+    +stopActiveDetection() : void
+    +startInactiveDetection() : void
+    +stopInactiveDetection() : void
+    +startMonitoringRoutines() : void
+    +stopMonitoringRoutines() : void
+    +checkActiveDetectionTimer() : bool
+    -updateRoutine(pvParameters : void*) : void
+    -state : State
     -acquisition_subsystem : AcquisitionSubsystem
+    -communication_subsystem : CommunicationSubsystem
     -processing_subsystem : ProcessingSubsystem
-    -comunication_subsystem : ComunicationSubsystem
 }
-
-' Classes de sensores
-class MPU6050 implements Sensor  {
-    +readData() : float
+class AcquisitionSubsystem {
+    +AcquisitionSubsystem()
+    +~AcquisitionSubsystem()
+    +init(sampling_period : int) : void
+    +startAcquisition() : void
+    +stopAcquisition() : void
+    +enableActivityDetection(threshold : float = 1, period : int = 500) : void
+    +enableInactivityDetection(threshold : float = 1, period : int = 500) : void
+    +getIsMoving() : bool
+    +disableActivityDetection() : void
+    +disableInactivityDetection() : void
+    +getTimerIsAlive() : bool
+    -setActiveThreshold(threshold : float) : void
+    -setInactiveThreshold(threshold : float) : void
+    -startPollingTimer(period : int, xTimer : TimerHandle_t*, timer_callback : TimerCallbackFunction_t) : void
+    -acquisition_task_handle : TaskHandle_t
+    -accelerometer : ADXL345
+    -_sampling_period : int
+    -thresholdActive : float
+    -thresholdInactive : float
+    -is_active : bool
+    -count_inactive : uint8_t
+    -is_timer_alive : bool
+    -xTimerActive : TimerHandle_t
+    -xTimerInactive : TimerHandle_t
+    +AcquisitionRoutine(pvParameters : void*) : void
+    +timerCallbackActive(xTimer : TimerHandle_t) : void
+    +timerCallbackInactive(xTimer : TimerHandle_t) : void
 }
-
-class ADXL345 implements Sensor {
-    +readData() : float
-}
-
-interface Sensor {
-    +readData() : float
-}
-
-' Classe de Fila Bloqueante
-class Blockingqueue {
-    +enqueue(dado : float) : void
-    +dequeue() : float
-}
-' Threads do Sistema
-class AcquisitionSubsystem { 
-    -sensors : Sensor[2]
-    +run() : void
-    +initAcquisition() : bool
+class ADXL345 extends Adafruit_ADXL345_Unified {
+    +ADXL345(sensorID : int = 12345)
+    +displayRange() : void
+    +displayDataRate() : void
+    +displayAccelerations(period : int) : void
+    +calibrateAxis(num_readings : int = 250) : void
+    +setOffset(offset : int, eixo : Axis) : void
+    +init() : void
+    +displayAccelerationUnscaled(period : int) : void
+    +GetAccelerations(x : float*, y : float*, z : float*) : void
 }
 class ProcessingSubsystem {
-    +run() : void
-}
-class ComunicationSubsystem {
-    -comunicacao : IComunication
-    +run() : void
-    +initComunication(): bool
-}
+    +ProcessingSubsystem()
+    +~ProcessingSubsystem()
+    +init(processing_period : int) : void
+    +startProcessing() : void
+    +stopProcessing() : void
+    +processingRoutine(pvParameters : void*) : void
 
-AcquisitionSubsystem --> Blockingqueue : "enqueue()"
-AcquisitionSubsystem --> Sensor: readData()
-
-ProcessingSubsystem --> Blockingqueue : "dequeue()"
-ProcessingSubsystem --> Blockingqueue : "enqueue()"
-
-ComunicationSubsystem --> Blockingqueue : "dequeue()"
-ComunicationSubsystem -->   IComunication: sendData()
-
-' Comunicação Ethernet e MQTT
-interface IComunication {
-    +sendData(dado : float) : void
+    -_processing_period : int
+    -_low_pass_filter_x : LowPassFilter
+    -_low_pass_filter_y : LowPassFilter
+    -_low_pass_filter_z : LowPassFilter
+    -processing_thread_handle : TaskHandle_t
 }
-class MQTTClient implements IComunication {
-    +sendData(dado : float) : void
-    +publish(mensagem : String) : void
+class LowPassFilter {
+    +LowPassFilter()
+    +filt(xn : float) : float
+    +reset() : void
+
+    -b : float[11]
+    -a : float[10]
+    -x : float[11]
+    -y : float[11]
+    -index : int
 }
-class EthernetController {
+class CommunicationSubsystem {
+    +CommunicationSubsystem()
+    +~CommunicationSubsystem()
+    +init(sending_period : int) : void
+    +startCommunication() : void
+    +stopCommunication() : void
+    +communicationRoutine(pvParameters : void*) : void
+    -_sending_period : int
+    -communication_thread_handle : TaskHandle_t
+    -mqtt : MQTT
+}
+class MQTT {
+    +MQTT(reconnect_count : int = 10, MAX_MESSAGE_SIZE : int = 128)
+    +~MQTT()
+    +init(token : String, server : String) : void
+    +connect() : bool
+    +sendData(key : String, value : float) : bool
+    +sendJsonData(json : String) : bool
+    +loop() : void
+    -tb : ThingsBoard
+    -mqttClient : Espressif_MQTT_Client<DefaultLogger>
+    -reconnect_count : int
+    -token : String
+    -thingsboard_server : String
+}
+class Ethernet {
+    +getInstance() : Ethernet*
+    +init() : void
+    +isConnected() : bool
     +conect() : void
     +enviar(dados : DadosVibracao) : void
+
+    -eth_event_handler(arg : void, event_base : esp_event_base_t, event_id : int32_t, event_data : void) : void
+    -got_ip_event_handler(arg : void, event_base : esp_event_base_t, event_id : int32_t, event_data : void) : void
+
+    -TAG : const char*
+    -instance : Ethernet*
+    -mtx : std::mutex
+    -is_connected : bool
 }
+class BlockingQueue<T> {
+    +BlockingQueue(max_size : size_t)
+    +~BlockingQueue()
+    +push(item : T) : void
+    +pop() : T
+    +clear() : void
+    -queue_ : QueueHandle_t
+}
+AcquisitionSubsystem --> "1...*" BlockingQueue : "push()"
+AcquisitionSubsystem -left-> "1..*" ADXL345: "GetAccelerations()"
 
-MQTTClient --> EthernetController : "enviar()"
+ProcessingSubsystem --> "1...*" BlockingQueue : "pop()"
+ProcessingSubsystem --> "1...*" BlockingQueue : "push()"
+ProcessingSubsystem -left-> "1..*" LowPassFilter : "filt()"
 
-' Middleware gerencia todas as threads e filas
+CommunicationSubsystem --> "1...*" BlockingQueue : "pop()"
+CommunicationSubsystem --> MQTT: "sendData()"
+
+
+MQTT --> Ethernet : "envia dados"
+
 VibrationSystem -left-> AcquisitionSubsystem : Executa
 VibrationSystem --> ProcessingSubsystem : Executa
-VibrationSystem -right-> ComunicationSubsystem : Executa
-VibrationSystem --> Blockingqueue : gerencia
-VibrationSystem -up-> State : possui
+VibrationSystem -right-> CommunicationSubsystem : Executa
+VibrationSystem -up-> State : transitionTo()
 
 ' Maquina de estados 
 abstract class State {
@@ -82,30 +157,28 @@ abstract class State {
     +update() : void
     +exit() : void
 }
-class IniciandoDispositivo extends State {
+class StartingDevice extends State {
     +enter() : void
     +update() : void
     +exit() : void
 }
-class AguardandoColeta extends State {
+class AwaitingMonitoring extends State {
     +enter() : void
     +update() : void
     +exit() : void
 }
-class Coletandodados extends State {
-    +enter() : void
-    +update() : void
-    +exit() : void
-}
-class LidandoComErros extends State {
+class Monitoring extends State {
     +enter() : void
     +update() : void
     +exit() : void
 }
 
 ' Notas
-note left of EthernetController
+note left of Ethernet
     Singleton implementation
 end note
 
+note left of BlockingQueue
+    Static object
+end note
 @enduml
